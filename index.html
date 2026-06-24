@@ -1,16 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { font-family: sans-serif; text-align: center; padding-top: 50px; }
-        button { padding: 15px 30px; font-size: 18px; border-radius: 10px; border: none; background: #2481cc; color: white; }
+        .filter-btn { padding: 8px 15px; margin: 5px; cursor: pointer; }
+        .product { border: 1px solid #ddd; padding: 10px; margin: 10px; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <h1>Наш магазин</h1>
-    <button onclick="Telegram.WebApp.sendData('Покупка совершена!')">Купить товар</button>
-    <script>Telegram.WebApp.ready();</script>
+    <div id="filters">
+        <button class="filter-btn" onclick="filterCatalog('all')">Все</button>
+        <button class="filter-btn" onclick="filterCatalog('phones')">Телефоны</button>
+        <button class="filter-btn" onclick="filterCatalog('audio')">Аудио</button>
+    </div>
+    <div id="catalog"></div>
+
+    <script>
+        const products = [
+            { id: 1, name: "iPhone 15", category: "phones", price: "900$" },
+            { id: 2, name: "AirPods", category: "audio", price: "200$" },
+            { id: 3, name: "Samsung S24", category: "phones", price: "850$" }
+        ];
+
+        function filterCatalog(cat) {
+            let filtered = cat === 'all' ? products : products.filter(p => p.category === cat);
+            let container = document.getElementById('catalog');
+            container.innerHTML = '';
+            filtered.forEach(p => {
+                container.innerHTML += `<div class="product"><h3>${p.name}</h3><p>${p.price}</p>
+                <button onclick="Telegram.WebApp.sendData('${p.name}')">Купить</button></div>`;
+            });
+        }
+        
+        // Показываем всё при загрузке
+        filterCatalog('all');
+        Telegram.WebApp.ready();
+    </script>
 </body>
 </html>
