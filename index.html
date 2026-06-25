@@ -1,70 +1,43 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta charset="UTF-8">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-    /* Устанавливаем базовый размер шрифта для всех устройств */
-    body { 
-        font-family: sans-serif; 
-        font-size: 16px; /* Это стандарт для чтения на телефонах */
-        margin: 0; 
-        padding: 10px; 
-    }
-    
-    #catalog { 
-        display: grid; 
-        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-        gap: 15px; 
-    }
-
-    .product { 
-        border: 1px solid #ddd; 
-        padding: 15px; 
-        border-radius: 12px; 
-        background: #f9f9f9;
-    }
-
-    button { 
-        padding: 12px 20px; 
-        font-size: 16px; /* Кнопки должны быть удобно нажимаемыми пальцем */
-        cursor: pointer;
-        background: #2481cc;
-        color: white;
-        border: none;
-        border-radius: 8px;
-        width: 100%; /* На телефоне кнопка растянется на всю ширину карточки */
-    }
+        body { font-family: sans-serif; padding: 15px; background: #fff; }
+        .product { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        button { width: 100%; padding: 12px; background: #2481cc; color: white; border: none; border-radius: 8px; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div id="filters">
-        <button class="filter-btn" onclick="filterCatalog('all')">Все</button>
-        <button class="filter-btn" onclick="filterCatalog('phones')">Телефоны</button>
-        <button class="filter-btn" onclick="filterCatalog('audio')">Аудио</button>
-    </div>
-    <div id="catalog"></div>
+    <div id="catalog">Загрузка товаров...</div>
 
     <script>
-        const products = [
-            { id: 1, name: "iPhone 15", category: "phones", price: "900$" },
-            { id: 2, name: "AirPods", category: "audio", price: "200$" },
-            { id: 3, name: "Samsung S24", category: "phones", price: "850$" }
-        ];
+        const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
 
-        function filterCatalog(cat) {
-            let filtered = cat === 'all' ? products : products.filter(p => p.category === cat);
-            let container = document.getElementById('catalog');
-            container.innerHTML = '';
-            filtered.forEach(p => {
-                container.innerHTML += `<div class="product"><h3>${p.name}</h3><p>${p.price}</p>
-                <button onclick="Telegram.WebApp.sendData('${p.name}')">Купить</button></div>`;
+        fetch(API_URL)
+            .then(response => response.json())
+            .then(data => {
+                // Предполагаем, что название листа в Sheety - это "лист1"
+                const products = data.лист1; 
+                const container = document.getElementById('catalog');
+                container.innerHTML = '';
+                
+                products.forEach(p => {
+                    container.innerHTML += `
+                        <div class="product">
+                            <h3>${p.name}</h3>
+                            <p>Категория: ${p.category}</p>
+                            <p>Цена: ${p.price}</p>
+                            <button onclick="Telegram.WebApp.sendData('${p.name} - ${p.price}')">Заказать</button>
+                        </div>`;
+                });
+            })
+            .catch(err => {
+                document.getElementById('catalog').innerHTML = 'Ошибка загрузки: ' + err;
             });
-        }
-        
-        // Показываем всё при загрузке
-        filterCatalog('all');
+
         Telegram.WebApp.ready();
     </script>
 </body>
