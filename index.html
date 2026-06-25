@@ -6,76 +6,77 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        h1 { text-align: center; }
+        .category-grid { display: grid; gap: 15px; }
+        .cat-btn { padding: 20px; border: none; border-radius: 16px; background: #f8f8f8; font-weight: bold; cursor: pointer; }
+        .product { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 16px; cursor: pointer; }
         
-        .category-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
-        .cat-btn { padding: 25px; border: none; border-radius: 20px; background: #f8f8f8; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-        .cat-btn:active { transform: scale(0.98); background: #eee; }
-        
-        .product { background: #fff; border: 1px solid #f0f0f0; padding: 20px; margin-bottom: 15px; border-radius: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
-        .product h3 { margin: 0 0 10px 0; color: #222; }
-        .product p { color: #666; font-size: 14px; }
-        .back-btn { width: 100%; padding: 15px; margin-bottom: 20px; background: #f0f0f0; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; }
-        
-        button.buy-btn { width: 100%; padding: 15px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        /* Стили модального окна */
+        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
+        .modal-img { width: 100%; border-radius: 16px; margin-bottom: 20px; }
+        .btn-main { width: 100%; padding: 15px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <!-- Экран категорий -->
     <div id="category-view">
-        <h1>Наш асортимент</h1>
+        <h1>Каталог</h1>
         <div class="category-grid">
-            <button class="cat-btn" onclick="showCategory('Телефони')">📱 Телефони <span>→</span></button>
-            <button class="cat-btn" onclick="showCategory('Планшети')">タブ Планшети <span>→</span></button>
-            <button class="cat-btn" onclick="showCategory('Аксесуари')">🎧 Аксесуари <span>→</span></button>
+            <button class="cat-btn" onclick="showCategory('Телефони')">📱 Телефони</button>
+            <button class="cat-btn" onclick="showCategory('Планшети')">タブ Планшети</button>
+            <button class="cat-btn" onclick="showCategory('Аксесуари')">🎧 Аксесуари</button>
         </div>
     </div>
 
-    <!-- Экран товаров -->
     <div id="product-view" style="display:none;">
-        <button class="back-btn" onclick="showMain()">← Назад до категорій</button>
-        <h2 id="cat-title" style="text-align: center;"></h2>
+        <button onclick="showMain()" style="margin-bottom:10px;">← Назад</button>
+        <h2 id="cat-title"></h2>
         <div id="catalog"></div>
+    </div>
+
+    <div id="modal">
+        <button onclick="closeModal()">← Назад</button>
+        <div id="modal-content"></div>
     </div>
 
     <script>
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
 
-        fetch(API_URL)
-            .then(res => res.json())
-            .then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
+        fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
 
-        function showCategory(category) {
+        function showCategory(cat) {
             document.getElementById('category-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'block';
-            document.getElementById('cat-title').innerText = category;
-            
+            document.getElementById('cat-title').innerText = cat;
             const container = document.getElementById('catalog');
             container.innerHTML = '';
             
-            const filtered = allProducts.filter(p => p.category && p.category.trim() === category);
-            
-            if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">У цій категорії поки що порожньо, але товар вже в дорозі.</p>';
-            } else {
-                filtered.forEach(p => {
-                    container.innerHTML += `
-                        <div class="product">
-                            <h3>${p.name}</h3>
-                            <p>Ціна: <b>${p.price}</b></p>
-                            <button class="buy-btn" onclick="Telegram.WebApp.sendData('${p.name} - ${p.price}')">Замовити</button>
-                        </div>`;
-                });
-            }
+            allProducts.filter(p => p.category && p.category.trim() === cat).forEach(p => {
+                container.innerHTML += `
+                    <div class="product" onclick='openModal(${JSON.stringify(p)})'>
+                        <h3>${p.name}</h3>
+                        <p>Ціна: ${p.price}</p>
+                    </div>`;
+            });
         }
 
-        function showMain() {
-            document.getElementById('product-view').style.display = 'none';
-            document.getElementById('category-view').style.display = 'block';
+        function openModal(p) {
+            const modal = document.getElementById('modal');
+            modal.style.display = 'block';
+            document.getElementById('modal-content').innerHTML = `
+                <img src="${p.image}" class="modal-img" onerror="this.style.display='none'">
+                <h2>${p.name}</h2>
+                <p>${p.description || 'Опису поки немає.'}</p>
+                <p><b>Ціна: ${p.price}</b></p>
+                <button class="btn-main" onclick="order('${p.name}', '${p.price}')">Замовити</button>
+            `;
         }
+
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        function showMain() { document.getElementById('product-view').style.display = 'none'; document.getElementById('category-view').style.display = 'block'; }
+        function order(name, price) { Telegram.WebApp.sendData(name + ' - ' + price); }
         
         Telegram.WebApp.ready();
     </script>
