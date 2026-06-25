@@ -59,7 +59,7 @@
             const filtered = allProducts.filter(p => p.category && p.category.trim() === category);
             
             if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">У цій категорії поки що порожньо.</p>';
+                container.innerHTML = '<p style="text-align:center;">У цій категорії поки що порожньо, але товар вже в дорозі.</p>';
             } else {
                 filtered.forEach(p => {
                     container.innerHTML += `
