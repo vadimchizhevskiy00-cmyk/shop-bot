@@ -6,13 +6,16 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { font-family: sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        h1, h2 { text-align: center; }
         .category-grid { display: flex; flex-direction: column; gap: 15px; margin-top: 20px; }
         .cat-btn { padding: 20px; border: none; border-radius: 16px; background: #f8f8f8; font-weight: bold; cursor: pointer; text-align: left; }
         .product { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 16px; cursor: pointer; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .btn-main { width: 100%; padding: 15px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px; }
         .back-nav { background: none; border: none; color: #2481cc; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
+        .specs-box { background: #f4f4f4; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 14px; }
+        .sort-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #f0f0f0; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -37,10 +40,11 @@
             <button class="cat-btn" onclick="showCategory('Apple')">Apple</button>
         </div>
     </div>
-    
+
     <div id="product-view" style="display:none;">
         <button class="back-nav" onclick="backToBrands()">← Назад</button>
         <h2 id="cat-title"></h2>
+        <div id="sort-controls" style="display:flex; gap:10px; margin-bottom:15px;"></div>
         <div id="catalog"></div>
     </div>
 
@@ -52,6 +56,7 @@
     <script>
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
+        let currentCategory = '';
 
         fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
 
@@ -61,37 +66,49 @@
         }
 
         function showCategory(cat) {
+            currentCategory = cat;
             document.getElementById('category-view').style.display = 'none';
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'block';
             document.getElementById('cat-title').innerText = cat;
-            
+            renderProducts(allProducts.filter(p => p.category && (p.category.trim() === cat || (cat === 'Телефони' && p.category.trim() === 'Телефони'))));
+        }
+
+        function renderProducts(products, sortType = 'default') {
             const container = document.getElementById('catalog');
+            const controls = document.getElementById('sort-controls');
             container.innerHTML = '';
+            controls.innerHTML = `
+                <button class="sort-btn" onclick="sortProducts('asc')">▲ Дешевші</button>
+                <button class="sort-btn" onclick="sortProducts('desc')">▼ Дорожчі</button>
+            `;
             
-            allProducts.forEach((p, index) => {
-                // Если выбрано "Телефони", показываем все, где категория "Телефони" 
-                // ИЛИ если категория совпадает с выбранным брендом
-                if (p.category && (p.category.trim() === cat || (cat === 'Телефони' && p.category.trim() === 'Телефони'))) {
-                    const div = document.createElement('div');
-                    div.className = 'product';
-                    div.innerHTML = `<h3>${p.name}</h3><p>Ціна: ${p.price}</p>`;
-                    div.onclick = () => openModal(index);
-                    container.appendChild(div);
-                }
+            let sorted = [...products];
+            if (sortType === 'asc') sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+            if (sortType === 'desc') sorted.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+            
+            sorted.forEach((p) => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
+                div.onclick = () => openModal(p);
+                container.appendChild(div);
             });
         }
 
-        function openModal(index) {
-            const p = allProducts[index];
+        function sortProducts(type) {
+            renderProducts(allProducts.filter(p => p.category && (p.category.trim() === currentCategory || (currentCategory === 'Телефони' && p.category.trim() === 'Телефони'))), type);
+        }
+
+        function openModal(p) {
             const content = document.getElementById('modal-content');
-            let specs = p.specs ? p.specs.split(';').map(i => `• ${i.trim()}`).join('<br>') : '';
+            let specs = p.specs ? p.specs.replace(/\n/g, ';').split(';').map(i => `• ${i.trim()}`).filter(i => i !== '•').join('<br>') : '';
             content.innerHTML = `
                 ${p.image ? `<img src="${p.image}" style="width:100%; border-radius:16px;">` : ''}
                 <h2>${p.name}</h2>
-                <p><i>${p.description || ''}</i></p>
-                ${specs ? `<h4>Характеристики:</h4><div style="background:#f4f4f4; padding:10px; border-radius:12px;">${specs}</div>` : ''}
-                <p><b>Ціна: ${p.price}</b></p>
+                <p style="font-style: italic;">${p.description || ''}</p>
+                ${specs ? `<h4>Характеристики:</h4><div class="specs-box">${specs}</div>` : ''}
+                <p style="margin-top:20px;"><b>Ціна: ${p.price}</b></p>
             `;
             const btn = document.createElement('button');
             btn.className = 'btn-main';
