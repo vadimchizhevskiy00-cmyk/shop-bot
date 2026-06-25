@@ -30,13 +30,14 @@
         <button class="back-nav" onclick="showMain()">← Назад</button>
         <h2>Оберіть бренд</h2>
         <div class="category-grid">
+            <button class="cat-btn" onclick="showCategory('Телефони')">📱 Усі телефони</button>
             <button class="cat-btn" onclick="showCategory('Samsung')">Samsung</button>
             <button class="cat-btn" onclick="showCategory('Redmi')">Redmi</button>
             <button class="cat-btn" onclick="showCategory('Xiaomi')">Xiaomi</button>
             <button class="cat-btn" onclick="showCategory('Apple')">Apple</button>
         </div>
     </div>
-
+    
     <div id="product-view" style="display:none;">
         <button class="back-nav" onclick="backToBrands()">← Назад</button>
         <h2 id="cat-title"></h2>
@@ -69,8 +70,9 @@
             container.innerHTML = '';
             
             allProducts.forEach((p, index) => {
-                // Ищем товар, если его категория совпадает с брендом
-                if (p.category && p.category.trim() === cat) {
+                // Если выбрано "Телефони", показываем все, где категория "Телефони" 
+                // ИЛИ если категория совпадает с выбранным брендом
+                if (p.category && (p.category.trim() === cat || (cat === 'Телефони' && p.category.trim() === 'Телефони'))) {
                     const div = document.createElement('div');
                     div.className = 'product';
                     div.innerHTML = `<h3>${p.name}</h3><p>Ціна: ${p.price}</p>`;
