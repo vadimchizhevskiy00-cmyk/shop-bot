@@ -15,7 +15,7 @@
         .btn-main { width: 100%; padding: 15px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px; }
         .back-nav { background: none; border: none; color: #2481cc; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
         .specs-box { background: #f4f4f4; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 14px; }
-        .sort-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #f0f0f0; font-weight: bold; cursor: pointer; }
+        .sort-btn { flex: 1; padding: 10px; border: none; border-radius: 8px; background: #eee; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -33,7 +33,6 @@
         <button class="back-nav" onclick="showMain()">← Назад</button>
         <h2>Оберіть бренд</h2>
         <div class="category-grid">
-            <button class="cat-btn" onclick="showCategory('Телефони')">📱 Усі телефони</button>
             <button class="cat-btn" onclick="showCategory('Samsung')">Samsung</button>
             <button class="cat-btn" onclick="showCategory('Redmi')">Redmi</button>
             <button class="cat-btn" onclick="showCategory('Xiaomi')">Xiaomi</button>
@@ -44,7 +43,10 @@
     <div id="product-view" style="display:none;">
         <button class="back-nav" onclick="backToBrands()">← Назад</button>
         <h2 id="cat-title"></h2>
-        <div id="sort-controls" style="display:flex; gap:10px; margin-bottom:15px;"></div>
+        <div id="sort-controls" style="display:flex; gap:10px; margin-bottom:15px;">
+            <button class="sort-btn" onclick="sortProducts('asc')">▲ Дешевші</button>
+            <button class="sort-btn" onclick="sortProducts('desc')">▼ Дорожчі</button>
+        </div>
         <div id="catalog"></div>
     </div>
 
@@ -71,17 +73,12 @@
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'block';
             document.getElementById('cat-title').innerText = cat;
-            renderProducts(allProducts.filter(p => p.category && (p.category.trim() === cat || (cat === 'Телефони' && p.category.trim() === 'Телефони'))));
+            renderProducts(allProducts.filter(p => p.category && p.category.trim() === cat));
         }
 
         function renderProducts(products, sortType = 'default') {
             const container = document.getElementById('catalog');
-            const controls = document.getElementById('sort-controls');
             container.innerHTML = '';
-            controls.innerHTML = `
-                <button class="sort-btn" onclick="sortProducts('asc')">▲ Дешевші</button>
-                <button class="sort-btn" onclick="sortProducts('desc')">▼ Дорожчі</button>
-            `;
             
             let sorted = [...products];
             if (sortType === 'asc') sorted.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
@@ -97,7 +94,7 @@
         }
 
         function sortProducts(type) {
-            renderProducts(allProducts.filter(p => p.category && (p.category.trim() === currentCategory || (currentCategory === 'Телефони' && p.category.trim() === 'Телефони'))), type);
+            renderProducts(allProducts.filter(p => p.category && p.category.trim() === currentCategory), type);
         }
 
         function openModal(p) {
