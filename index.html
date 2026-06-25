@@ -14,6 +14,14 @@
         
         .product { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .back-btn { width: 100%; padding: 12px; margin-bottom: 20px; background: #eee; border: none; border-radius: 12px; font-weight: bold; }
+        /* Добавьте это в секцию <style> */
+        .fade-in {
+        animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+        }
         
         button { width: 100%; padding: 14px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
     </style>
