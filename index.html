@@ -54,14 +54,14 @@
             const filtered = allProducts.filter(p => p.category && p.category.trim() === category);
             
             if (filtered.length === 0) {
-                container.innerHTML = '<p style="text-align:center;">В этой категории пока пусто.</p>';
+                container.innerHTML = '<p style="text-align:center;">Поки що пусто.</p>';
             } else {
                 filtered.forEach(p => {
                     container.innerHTML += `
                         <div class="product">
                             <h3>${p.name}</h3>
-                            <p>Цена: ${p.price}</p>
-                            <button onclick="Telegram.WebApp.sendData('${p.name} - ${p.price}')">Заказать</button>
+                            <p>Цiна: ${p.price}</p>
+                            <button onclick="Telegram.WebApp.sendData('${p.name} - ${p.price}')">Замовити</button>
                         </div>`;
                 });
             }
