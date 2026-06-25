@@ -73,10 +73,15 @@
             const modal = document.getElementById('modal');
             const content = document.getElementById('modal-content');
             
-            // Превращаем строку характеристик в список с новой строки
+            // Улучшенная логика: делим по ';' ИЛИ по переносу строки
             let formattedSpecs = '';
             if (p.specs) {
-                formattedSpecs = p.specs.split(';').map(item => item.trim()).filter(item => item).join('<br>');
+                // Заменяем все виды переносов на ';' и разбиваем
+                formattedSpecs = p.specs.replace(/\n/g, ';').split(';')
+                    .map(item => item.trim())
+                    .filter(item => item !== '')
+                    .map(item => `• ${item}`) // Добавляем булет для красоты
+                    .join('<br>');
             }
             
             content.innerHTML = `
@@ -95,7 +100,6 @@
             
             modal.style.display = 'block';
         }
-
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
         function showMain() { document.getElementById('product-view').style.display = 'none'; document.getElementById('category-view').style.display = 'block'; }
         
