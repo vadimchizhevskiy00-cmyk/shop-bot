@@ -6,19 +6,15 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
-        h1 { text-align: center; color: #333; }
-        
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        h1 { text-align: center; }
         .category-grid { display: grid; gap: 15px; margin-top: 20px; }
-        .cat-btn { padding: 20px; border: none; border-radius: 16px; background: #f8f8f8; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-        
+        .cat-btn { padding: 20px; border: none; border-radius: 16px; background: #f8f8f8; font-weight: bold; cursor: pointer; display: flex; justify-content: space-between; }
         .product { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 10px; border-radius: 16px; cursor: pointer; }
-        .product h3 { margin: 0 0 5px 0; }
         
-        /* Модальное окно */
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .modal-img { width: 100%; border-radius: 16px; margin-bottom: 20px; }
-        .modal-description { white-space: pre-wrap; line-height: 1.5; color: #444; margin: 15px 0; }
+        .modal-description { white-space: pre-wrap; line-height: 1.5; color: #444; }
         .btn-main { width: 100%; padding: 15px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 20px; }
         .back-nav { background: none; border: none; color: #2481cc; font-size: 16px; cursor: pointer; margin-bottom: 10px; }
     </style>
@@ -35,7 +31,7 @@
     </div>
 
     <div id="product-view" style="display:none;">
-        <button class="back-nav" onclick="showMain()">← Назад до категорій</button>
+        <button class="back-nav" onclick="showMain()">← Назад</button>
         <h2 id="cat-title"></h2>
         <div id="catalog"></div>
     </div>
@@ -61,16 +57,19 @@
             const container = document.getElementById('catalog');
             container.innerHTML = '';
             
-            allProducts.filter(p => p.category && p.category.trim() === cat).forEach(p => {
-                container.innerHTML += `
-                    <div class="product" onclick='openModal(${JSON.stringify(p)})'>
-                        <h3>${p.name}</h3>
-                        <p>Ціна: <b>${p.price}</b></p>
-                    </div>`;
+            allProducts.forEach((p, index) => {
+                if (p.category && p.category.trim() === cat) {
+                    container.innerHTML += `
+                        <div class="product" onclick="openModal(${index})">
+                            <h3>${p.name}</h3>
+                            <p>Ціна: <b>${p.price}</b></p>
+                        </div>`;
+                }
             });
         }
 
-        function openModal(p) {
+        function openModal(index) {
+            const p = allProducts[index];
             const modal = document.getElementById('modal');
             modal.style.display = 'block';
             document.getElementById('modal-content').innerHTML = `
@@ -78,7 +77,7 @@
                 <h2>${p.name}</h2>
                 <p class="modal-description">${p.description || 'Опису поки немає.'}</p>
                 <p><b>Ціна: ${p.price}</b></p>
-                <button class="btn-main" onclick="order('${p.name}', '${p.price}')">Замовити</button>
+                <button class="btn-main" onclick="order('${p.name.replace(/'/g, "\\'")}', '${p.price}')">Замовити</button>
             `;
         }
 
