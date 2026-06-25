@@ -6,20 +6,13 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        body { font-family: sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
         h1, h2 { text-align: center; }
-        
         .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .cat-btn { padding: 25px 10px; border: none; border-radius: 16px; background: #f0f0f0; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .cat-btn:active { transform: scale(0.95); }
-        
+        .cat-btn { padding: 25px 10px; border: none; border-radius: 16px; background: #f0f0f0; font-weight: bold; cursor: pointer; }
         .product { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .back-btn { width: 100%; padding: 12px; margin-bottom: 20px; background: #eee; border: none; border-radius: 12px; font-weight: bold; }
-        
-        button { width: 100%; padding: 14px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
-        
-        .fade-in { animation: fadeIn 0.3s ease-in-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        button { width: 100%; padding: 14px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -27,13 +20,13 @@
     <div id="category-view">
         <h1>Каталог</h1>
         <div class="category-grid">
-            <button class="cat-btn" onclick="showCategory('телефоны')">📱 Телефоны</button>
-            <button class="cat-btn" onclick="showCategory('планшеты')">タブ Планшеты</button>
-            <button class="cat-btn" onclick="showCategory('аксессуары')">🎧 Аксессуары</button>
+            <button class="cat-btn" onclick="showCategory('Телефони')">📱 Телефони</button>
+            <button class="cat-btn" onclick="showCategory('Планшети')">タブ Планшети</button>
+            <button class="cat-btn" onclick="showCategory('Аксесуари')">🎧 Аксесуари</button>
         </div>
     </div>
 
-    <div id="product-view" style="display:none;" class="fade-in">
+    <div id="product-view" style="display:none;">
         <button class="back-btn" onclick="showMain()">← Назад</button>
         <h2 id="cat-title"></h2>
         <div id="catalog"></div>
@@ -45,19 +38,20 @@
 
         fetch(API_URL)
             .then(res => res.json())
-            .then(data => { allProducts = data.лист1; });
+            .then(data => { 
+                allProducts = Array.isArray(data) ? data : data.лист1; 
+            });
 
         function showCategory(category) {
             document.getElementById('category-view').style.display = 'none';
-            const prodView = document.getElementById('product-view');
-            prodView.style.display = 'block';
-            
-            document.getElementById('cat-title').innerText = category.charAt(0).toUpperCase() + category.slice(1);
+            document.getElementById('product-view').style.display = 'block';
+            document.getElementById('cat-title').innerText = category;
             
             const container = document.getElementById('catalog');
             container.innerHTML = '';
             
-            const filtered = allProducts.filter(p => p.category.trim().toLowerCase() === category.toLowerCase());
+            // Фильтрация теперь сравнивает строго с тем, что вы написали
+            const filtered = allProducts.filter(p => p.category && p.category.trim() === category);
             
             if (filtered.length === 0) {
                 container.innerHTML = '<p style="text-align:center;">В этой категории пока пусто.</p>';
