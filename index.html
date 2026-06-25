@@ -6,30 +6,26 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); }
-        h1 { font-size: 1.5em; text-align: center; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; }
+        h1, h2 { text-align: center; }
         
         .category-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .cat-btn { padding: 20px; border: none; border-radius: 16px; background: #f0f0f0; font-weight: bold; cursor: pointer; }
+        .cat-btn { padding: 25px 10px; border: none; border-radius: 16px; background: #f0f0f0; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        .cat-btn:active { transform: scale(0.95); }
         
         .product { border: 1px solid #eee; padding: 15px; margin-bottom: 15px; border-radius: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .back-btn { width: 100%; padding: 12px; margin-bottom: 20px; background: #eee; border: none; border-radius: 12px; font-weight: bold; }
-        /* Добавьте это в секцию <style> */
-        .fade-in {
-        animation: fadeIn 0.3s ease-in-out;
-        }
-        @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
-        }
         
-        button { width: 100%; padding: 14px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; }
+        button { width: 100%; padding: 14px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 10px; cursor: pointer; }
+        
+        .fade-in { animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <div id="category-view">
-        <h1>Выберите категорию</h1>
+        <h1>Каталог</h1>
         <div class="category-grid">
             <button class="cat-btn" onclick="showCategory('телефоны')">📱 Телефоны</button>
             <button class="cat-btn" onclick="showCategory('планшеты')">タブ Планшеты</button>
@@ -37,31 +33,31 @@
         </div>
     </div>
 
-    <div id="product-view" style="display:none;">
-        <button class="back-btn" onclick="showMain()">← Назад к категориям</button>
-        <h2 id="cat-title" style="text-align: center;"></h2>
+    <div id="product-view" style="display:none;" class="fade-in">
+        <button class="back-btn" onclick="showMain()">← Назад</button>
+        <h2 id="cat-title"></h2>
         <div id="catalog"></div>
     </div>
 
     <script>
-        // Вставьте сюда ваш URL от Sheety
+        // Ваш API URL
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
 
-        // Загружаем данные один раз при открытии
         fetch(API_URL)
             .then(res => res.json())
             .then(data => { allProducts = data.лист1; });
 
         function showCategory(category) {
             document.getElementById('category-view').style.display = 'none';
-            document.getElementById('product-view').style.display = 'block';
+            const prodView = document.getElementById('product-view');
+            prodView.style.display = 'block';
+            
             document.getElementById('cat-title').innerText = category.charAt(0).toUpperCase() + category.slice(1);
             
             const container = document.getElementById('catalog');
             container.innerHTML = '';
             
-            // Фильтрация с учетом пробелов и регистра
             const filtered = allProducts.filter(p => p.category.trim().toLowerCase() === category.toLowerCase());
             
             if (filtered.length === 0) {
