@@ -6,41 +6,12 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root { --tg-bg-color: #ffffff; --tg-theme-button-color: #2481cc; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-            padding: 20px; 
-            background-color: var(--tg-bg-color); 
-            margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center;
-        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 20px; background-color: var(--tg-bg-color); margin: 0; display: flex; flex-direction: column; align-items: center; }
         h1 { margin-bottom: 30px; font-size: 28px; text-align: center; }
         h2 { text-align: center; }
-        
-        .category-grid { 
-            display: flex; 
-            flex-direction: column; 
-            gap: 15px; 
-            width: 100%; 
-            max-width: 400px;
-        }
-        
-        .cat-btn { 
-            display: flex;
-            align-items: center;
-            padding: 18px 20px; 
-            border: none; 
-            border-radius: 16px; 
-            background: #f8f8f8; 
-            font-size: 17px;
-            font-weight: 600; 
-            cursor: pointer; 
-            color: #333;
-            transition: background 0.2s;
-        }
+        .category-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
+        .cat-btn { display: flex; align-items: center; padding: 18px 20px; border: none; border-radius: 16px; background: #f8f8f8; font-size: 17px; font-weight: 600; cursor: pointer; color: #333; transition: background 0.2s; width: 100%; }
         .cat-btn:active { background: #eee; }
-        
         .product { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 12px; border-radius: 16px; cursor: pointer; width: 100%; max-width: 400px; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .btn-main { width: 100%; max-width: 400px; padding: 16px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 25px; }
@@ -74,9 +45,7 @@
     <div id="product-view" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <button class="back-nav" onclick="backToPrevious()">← Назад</button>
         <h2 id="cat-title"></h2>
-        
-        <button id="sort-btn" class="cat-btn" style="padding: 10px 15px; font-size: 14px; margin-bottom: 10px;" onclick="sortProducts()">💰 Сортувати: Дешеві спочатку</button>
-        
+        <button id="sort-btn" class="cat-btn" style="max-width: 400px; margin-bottom: 15px;" onclick="sortProducts()">💰 Сортувати: Дешеві спочатку</button>
         <div id="catalog" style="width: 100%; max-width: 400px;"></div>
     </div>
 
@@ -89,21 +58,13 @@
         Telegram.WebApp.expand();
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
-        let currentProducts = []; // Добавьте это в начало скрипта
+        let currentProducts = [];
         let isSorted = false;
 
-        function showCategory(cat, isFromMain) {
-            window.fromMain = isFromMain;
-            document.getElementById('category-view').style.display = 'none';
-            document.getElementById('brand-view').style.display = 'none';
-            document.getElementById('product-view').style.display = 'flex';
-            document.getElementById('cat-title').innerText = cat;
-            
-            // Фильтруем товары для текущей категории
-            currentProducts = allProducts.filter(p => p.category && p.category.trim() === cat);
-            isSorted = false; // Сбрасываем сортировку
-            renderCatalog();
-        }
+        fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
+
+        function showBrands() { document.getElementById('category-view').style.display = 'none'; document.getElementById('brand-view').style.display = 'flex'; }
+        function showMain() { document.getElementById('brand-view').style.display = 'none'; document.getElementById('category-view').style.display = 'flex'; }
 
         function renderCatalog() {
             const container = document.getElementById('catalog');
@@ -119,27 +80,10 @@
 
         function sortProducts() {
             isSorted = !isSorted;
-            if (isSorted) {
-                // Сортируем: превращаем цену в число (заменяем все нечисловые символы, если нужно)
-                currentProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-                document.getElementById('sort-btn').innerText = '💰 Сортувати: Дорогі спочатку';
-            } else {
-                // Возвращаем исходный порядок (можно просто перезагрузить)
-                showCategory(document.getElementById('cat-title').innerText, window.fromMain);
-                return;
-            }
+            const getPrice = (p) => parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0;
+            currentProducts.sort((a, b) => isSorted ? getPrice(a) - getPrice(b) : getPrice(b) - getPrice(a));
+            document.getElementById('sort-btn').innerText = isSorted ? '💰 Сортувати: Дорогі спочатку' : '💰 Сортувати: Дешеві спочатку';
             renderCatalog();
-        }
-        fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
-
-        function showBrands() {
-            document.getElementById('category-view').style.display = 'none';
-            document.getElementById('brand-view').style.display = 'flex';
-        }
-
-        function showMain() {
-            document.getElementById('brand-view').style.display = 'none';
-            document.getElementById('category-view').style.display = 'flex';
         }
 
         function showCategory(cat, isFromMain) {
@@ -148,26 +92,15 @@
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'flex';
             document.getElementById('cat-title').innerText = cat;
-            
-            const container = document.getElementById('catalog');
-            container.innerHTML = '';
-            
-            allProducts.filter(p => p.category && p.category.trim() === cat).forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'product';
-                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
-                div.onclick = () => openProduct(p);
-                container.appendChild(div);
-            });
+            currentProducts = allProducts.filter(p => p.category && p.category.trim() === cat);
+            isSorted = false;
+            renderCatalog();
         }
 
         function backToPrevious() {
             document.getElementById('product-view').style.display = 'none';
-            if (window.fromMain) {
-                document.getElementById('category-view').style.display = 'flex';
-            } else {
-                document.getElementById('brand-view').style.display = 'flex';
-            }
+            if (window.fromMain) document.getElementById('category-view').style.display = 'flex';
+            else document.getElementById('brand-view').style.display = 'flex';
         }
 
         function showInfo() {
@@ -177,30 +110,15 @@
                 <div style="line-height: 1.6; text-align: center;">
                     <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8</b></p>
                     <p>Графік роботи:<br>Пн-Пт: 10:00 - 20:00<br>Сб-Нд: 11:00 - 18:00</p>
-                    <p>Телефони підтримки:<br>
-                    <a href="tel:+380XXXXXXXXX" style="color: #2481cc; font-weight: bold; text-decoration: none;">+380 (97) 391-64-00</a><br>
-                    <a href="tel:+380YYYYYYYYY" style="color: #2481cc; font-weight: bold; text-decoration: none;">+380 (63) 189-16-83</a></p>
+                    <p>Телефони підтримки:<br><a href="tel:+380XXXXXXXXX">+380973916400</a><br><a href="tel:+380YYYYYYYY">+380631891683</a></p>
                 </div>
-                <button class="btn-main" onclick="closeModal()">Зрозуміло</button>
-            `;
+                <button class="btn-main" onclick="closeModal()">Зрозуміло</button>`;
             document.getElementById('modal').style.display = 'block';
         }
 
         function openProduct(p) {
             const content = document.getElementById('modal-content');
-            let specs = p.specs ? p.specs.replace(/\n/g, ';').split(';').map(i => `• ${i.trim()}`).filter(i => i !== '•').join('<br>') : '';
-            content.innerHTML = `
-                ${p.image ? `<img src="${p.image}" style="width:100%; border-radius:16px;">` : ''}
-                <h2>${p.name}</h2>
-                <p style="font-style: italic;">${p.description || ''}</p>
-                ${specs ? `<h4>Характеристики:</h4><div class="specs-box">${specs}</div>` : ''}
-                <p style="margin-top:20px;"><b>Ціна: ${p.price}</b></p>
-            `;
-            const btn = document.createElement('button');
-            btn.className = 'btn-main';
-            btn.innerText = 'Замовити';
-            btn.onclick = () => Telegram.WebApp.sendData(`${p.name} - ${p.price}`);
-            content.appendChild(btn);
+            content.innerHTML = `<h2>${p.name}</h2><p><b>Ціна: ${p.price}</b></p><button class="btn-main" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>`;
             document.getElementById('modal').style.display = 'block';
         }
 
