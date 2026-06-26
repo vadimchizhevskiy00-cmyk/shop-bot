@@ -69,19 +69,10 @@
         function renderCatalog() {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
-            
-            // Добавляем проверку, есть ли вообще товары
-            if (currentProducts.length === 0) {
-                container.innerHTML = '<p style="text-align:center; color:grey;">Товарів не знайдено</p>';
-                return;
-            }
-
             currentProducts.forEach(p => {
                 const div = document.createElement('div');
                 div.className = 'product';
-                // Добавляем безопасный вывод цены
-                const priceText = p.price || "Ціна не вказана";
-                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${priceText}</b></p>`;
+                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
                 div.onclick = () => openProduct(p);
                 container.appendChild(div);
             });
@@ -89,22 +80,8 @@
 
         function sortProducts() {
             isSorted = !isSorted;
-            
-            // Безопасное получение цены
-            const getPrice = (p) => {
-                if (!p.price) return 0;
-                // Убираем все символы, кроме цифр и точки
-                const val = parseFloat(String(p.price).replace(/[^0-9.]/g, ''));
-                return isNaN(val) ? 0 : val;
-            };
-
-            // Сортируем
-            currentProducts.sort((a, b) => {
-                const priceA = getPrice(a);
-                const priceB = getPrice(b);
-                return isSorted ? (priceA - priceB) : (priceB - priceA);
-            });
-
+            const getPrice = (p) => parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0;
+            currentProducts.sort((a, b) => isSorted ? getPrice(a) - getPrice(b) : getPrice(b) - getPrice(a));
             document.getElementById('sort-btn').innerText = isSorted ? '💰 Сортувати: Дорогі спочатку' : '💰 Сортувати: Дешеві спочатку';
             renderCatalog();
         }
@@ -126,54 +103,51 @@
             else document.getElementById('brand-view').style.display = 'flex';
         }
 
+        function openProduct(p) {
+            const content = document.getElementById('modal-content');
+            const variants = [
+                { label: '64 ГБ', price: p.price64 },
+                { label: '128 ГБ', price: p.price128 },
+                { label: '256 ГБ', price: p.price256 },
+                { label: '512 ГБ', price: p.price512 }
+            ].filter(v => v.price);
+
+            let buttonsHtml = '';
+            let displayPrice = variants.length > 0 ? variants[0].price : (p.price || "Ціна не вказана");
+
+            if (variants.length > 0) {
+                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
+                variants.forEach(v => {
+                    buttonsHtml += `<button class="cat-btn" style="padding:10px; font-size:14px;" onclick="updatePrice('${v.price}', '${v.label}')">${v.label}</button>`;
+                });
+                buttonsHtml += `</div>`;
+            }
+
+            content.innerHTML = `<h2>${p.name}</h2>
+                <p id="current-price" style="font-size:20px; text-align:center;">Ціна: <b>${displayPrice}</b></p>
+                ${buttonsHtml}
+                <button class="btn-main" id="order-btn" onclick="Telegram.WebApp.sendData('${p.name} - ${displayPrice}')">Замовити</button>`;
+            document.getElementById('modal').style.display = 'block';
+        }
+
+        function updatePrice(price, memory) {
+            document.getElementById('current-price').innerHTML = `Ціна: <b>${price}</b>`;
+            const name = document.querySelector('h2').innerText;
+            document.getElementById('order-btn').onclick = () => Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
+        }
+
         function showInfo() {
             const content = document.getElementById('modal-content');
-            content.innerHTML = `
-                <h2 style="margin-bottom: 20px;">📍 Контакти</h2>
-                <div style="line-height: 1.6; text-align: center;">
+            content.innerHTML = `<h2 style="margin-bottom:20px;">📍 Контакти</h2>
+                <div style="line-height:1.6; text-align:center;">
                     <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8</b></p>
                     <p>Графік роботи:<br>Пн-Пт: 10:00 - 20:00<br>Сб-Нд: 11:00 - 18:00</p>
-                    <p>Телефони підтримки:<br><a href="tel:+380XXXXXXXXX">+380973916400</a><br><a href="tel:+380YYYYYYYY">+380631891683</a></p>
+                    <p>Телефони підтримки:<br><a href="tel:+380XXXXXXXXX">+380 (XX) XXX-XX-XX</a><br><a href="tel:+380YYYYYYYYY">+380 (YY) YYY-YY-YY</a></p>
                 </div>
                 <button class="btn-main" onclick="closeModal()">Зрозуміло</button>`;
             document.getElementById('modal').style.display = 'block';
         }
 
-        function openProduct(p) {
-            const content = document.getElementById('modal-content');
-    
-                // Массив вариантов для перебора
-                const variants = [
-                    { label: '64 ГБ', price: p.price64 },
-                    { label: '128 ГБ', price: p.price128 },
-                    { label: '256 ГБ', price: p.price256 },
-                    { label: '512 ГБ', price: p.price512 }
-                ].filter(v => v.price); // Оставляем только те, где есть цена
-
-        let buttonsHtml = '';
-            if (variants.length > 0) {
-                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
-                variants.forEach(v => {
-                buttonsHtml += `<button class="cat-btn" style="padding: 10px; text-align:center;" onclick="updatePrice('${v.price}', '${v.label}')">${v.label}</button>`;
-            });
-            buttonsHtml += `</div>`;
-        }
-
-            content.innerHTML = `
-            <h2>${p.name}</h2>
-            <p id="current-price" style="font-size: 20px; text-align:center;">Ціна: <b>${variants[0]?.price || p.price}</b></p>
-            ${buttonsHtml}
-            <button class="btn-main" id="order-btn" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>
-        `;
-        document.getElementById('modal').style.display = 'block';
-    }
-
-    function updatePrice(price, memory) {
-        document.getElementById('current-price').innerHTML = `Ціна: <b>${price}</b>`;
-        const name = document.querySelector('h2').innerText;
-        document.getElementById('order-btn').onclick = () => 
-            Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
-    }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
         Telegram.WebApp.ready();
     </script>
