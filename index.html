@@ -69,10 +69,19 @@
         function renderCatalog() {
             const container = document.getElementById('catalog');
             container.innerHTML = '';
+            
+            // Добавляем проверку, есть ли вообще товары
+            if (currentProducts.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:grey;">Товарів не знайдено</p>';
+                return;
+            }
+
             currentProducts.forEach(p => {
                 const div = document.createElement('div');
                 div.className = 'product';
-                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
+                // Добавляем безопасный вывод цены
+                const priceText = p.price || "Ціна не вказана";
+                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${priceText}</b></p>`;
                 div.onclick = () => openProduct(p);
                 container.appendChild(div);
             });
@@ -80,8 +89,22 @@
 
         function sortProducts() {
             isSorted = !isSorted;
-            const getPrice = (p) => parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0;
-            currentProducts.sort((a, b) => isSorted ? getPrice(a) - getPrice(b) : getPrice(b) - getPrice(a));
+            
+            // Безопасное получение цены
+            const getPrice = (p) => {
+                if (!p.price) return 0;
+                // Убираем все символы, кроме цифр и точки
+                const val = parseFloat(String(p.price).replace(/[^0-9.]/g, ''));
+                return isNaN(val) ? 0 : val;
+            };
+
+            // Сортируем
+            currentProducts.sort((a, b) => {
+                const priceA = getPrice(a);
+                const priceB = getPrice(b);
+                return isSorted ? (priceA - priceB) : (priceB - priceA);
+            });
+
             document.getElementById('sort-btn').innerText = isSorted ? '💰 Сортувати: Дорогі спочатку' : '💰 Сортувати: Дешеві спочатку';
             renderCatalog();
         }
