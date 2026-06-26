@@ -10,13 +10,12 @@
         h1 { margin-bottom: 30px; font-size: 28px; text-align: center; }
         h2 { text-align: center; }
         .category-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; }
-        .cat-btn { display: flex; align-items: center; padding: 18px 20px; border: none; border-radius: 16px; background: #f8f8f8; font-size: 17px; font-weight: 600; cursor: pointer; color: #333; transition: background 0.2s; width: 100%; }
+        .cat-btn { display: flex; align-items: center; padding: 18px 20px; border: none; border-radius: 16px; background: #f8f8f8; font-size: 17px; font-weight: 600; cursor: pointer; color: #333; transition: background 0.2s; width: 100%; justify-content: center; }
         .cat-btn:active { background: #eee; }
         .product { background: #fff; border: 1px solid #eee; padding: 15px; margin-bottom: 12px; border-radius: 16px; cursor: pointer; width: 100%; max-width: 400px; }
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 100; padding: 20px; box-sizing: border-box; overflow-y: auto; }
         .btn-main { width: 100%; max-width: 400px; padding: 16px; background: var(--tg-theme-button-color); color: white; border: none; border-radius: 12px; font-weight: bold; margin-top: 25px; }
         .back-nav { background: none; border: none; color: #2481cc; font-size: 16px; cursor: pointer; margin-bottom: 15px; font-weight: 500; }
-        .specs-box { background: #f9f9f9; padding: 15px; border-radius: 12px; margin-top: 15px; font-size: 14px; }
     </style>
 </head>
 <body>
@@ -45,7 +44,6 @@
     <div id="product-view" style="display:none; width: 100%; align-items: center; flex-direction: column;">
         <button class="back-nav" onclick="backToPrevious()">← Назад</button>
         <h2 id="cat-title"></h2>
-        <button id="sort-btn" class="cat-btn" style="max-width: 400px; margin-bottom: 15px;" onclick="sortProducts()">💰 Сортувати: Дешеві спочатку</button>
         <div id="catalog" style="width: 100%; max-width: 400px;"></div>
     </div>
 
@@ -58,33 +56,11 @@
         Telegram.WebApp.expand();
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
-        let currentProducts = [];
-        let isSorted = false;
 
         fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
 
         function showBrands() { document.getElementById('category-view').style.display = 'none'; document.getElementById('brand-view').style.display = 'flex'; }
         function showMain() { document.getElementById('brand-view').style.display = 'none'; document.getElementById('category-view').style.display = 'flex'; }
-
-        function renderCatalog() {
-            const container = document.getElementById('catalog');
-            container.innerHTML = '';
-            currentProducts.forEach(p => {
-                const div = document.createElement('div');
-                div.className = 'product';
-                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
-                div.onclick = () => openProduct(p);
-                container.appendChild(div);
-            });
-        }
-
-        function sortProducts() {
-            isSorted = !isSorted;
-            const getPrice = (p) => parseFloat(String(p.price).replace(/[^0-9.]/g, '')) || 0;
-            currentProducts.sort((a, b) => isSorted ? getPrice(a) - getPrice(b) : getPrice(b) - getPrice(a));
-            document.getElementById('sort-btn').innerText = isSorted ? '💰 Сортувати: Дорогі спочатку' : '💰 Сортувати: Дешеві спочатку';
-            renderCatalog();
-        }
 
         function showCategory(cat, isFromMain) {
             window.fromMain = isFromMain;
@@ -92,9 +68,17 @@
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'flex';
             document.getElementById('cat-title').innerText = cat;
-            currentProducts = allProducts.filter(p => p.category && p.category.trim() === cat);
-            isSorted = false;
-            renderCatalog();
+            
+            const container = document.getElementById('catalog');
+            container.innerHTML = '';
+            
+            allProducts.filter(p => p.category && p.category.trim() === cat).forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `<h3>${p.name}</h3>`;
+                div.onclick = () => openProduct(p);
+                container.appendChild(div);
+            });
         }
 
         function backToPrevious() {
@@ -105,7 +89,6 @@
 
         function openProduct(p) {
             const content = document.getElementById('modal-content');
-            
             const variants = [
                 { label: '64 ГБ', price: p.price64 },
                 { label: '128 ГБ', price: p.price128 },
@@ -114,38 +97,28 @@
             ].filter(v => v.price && v.price !== "");
 
             let buttonsHtml = '';
-            // Изначально цена не отображается (или пишем подсказку)
-            let displayPrice = "Оберіть об'єм пам'яті";
-
             if (variants.length > 0) {
-                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:10px; margin-bottom:15px;">`;
+                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
                 variants.forEach(v => {
-                    buttonsHtml += `<button class="cat-btn" style="padding:10px; text-align:center; justify-content:center;" onclick="updatePrice('${v.price}', '${v.label}', '${p.name}')">${v.label}</button>`;
+                    buttonsHtml += `<button class="cat-btn" style="padding:10px; font-size:14px;" onclick="updatePrice('${v.price}', '${v.label}', '${p.name}')">${v.label}</button>`;
                 });
                 buttonsHtml += `</div>`;
             }
 
-            content.innerHTML = `
-                <h2>${p.name}</h2>
-                <p style="font-size: 18px; text-align:center;">Ціна: <b id="current-price" style="color: #2481cc;">${displayPrice}</b></p>
+            content.innerHTML = `<h2>${p.name}</h2>
+                <p style="font-size:20px; text-align:center;">Ціна: <b id="current-price" style="color: #2481cc;">Оберіть об'єм пам'яті</b></p>
                 ${buttonsHtml}
-                <button class="btn-main" id="order-btn" style="display:none;" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>
-            `;
+                <button class="btn-main" id="order-btn" style="display:none;" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>`;
             document.getElementById('modal').style.display = 'block';
         }
 
         function updatePrice(price, memory, name) {
-            // 1. Показываем выбранную цену
             const priceEl = document.getElementById('current-price');
             priceEl.innerText = price;
-            priceEl.style.color = "#333"; // Делаем цвет текста обычным, когда цена выбрана
-            
-            // 2. Показываем кнопку "Замовити", если она была скрыта
+            priceEl.style.color = "#333";
             const orderBtn = document.getElementById('order-btn');
             orderBtn.style.display = 'block';
             orderBtn.innerText = `Замовити за ${price}`;
-            
-            // 3. Обновляем действие кнопки "Замовити"
             orderBtn.onclick = () => Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
         }
 
@@ -154,8 +127,8 @@
             content.innerHTML = `<h2 style="margin-bottom:20px;">📍 Контакти</h2>
                 <div style="line-height:1.6; text-align:center;">
                     <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8</b></p>
-                    <p>Графік роботи:<br>Пн-Пт: 10:00 - 20:00<br>Сб-Нд: 11:00 - 18:00</p>
-                    <p>Телефони підтримки:<br><a href="tel:+380XXXXXXXXX">+380 (XX) XXX-XX-XX</a><br><a href="tel:+380YYYYYYYYY">+380 (YY) YYY-YY-YY</a></p>
+                    <p>Графік роботи:<br>Пн-Пт: 08:00 - 18:00<br>Сб-Нд: 08:00 - 17:00</p>
+                    <p>Телефони підтримки:<br><a href="tel:+380XXXXXXXXX">+380973916400</a><br><a href="tel:+380YYYYYYYYY">+380631891683</a></p>
                 </div>
                 <button class="btn-main" onclick="closeModal()">Зрозуміло</button>`;
             document.getElementById('modal').style.display = 'block';
