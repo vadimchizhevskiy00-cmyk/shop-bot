@@ -98,7 +98,7 @@
 
             let buttonsHtml = '';
             if (variants.length > 0) {
-                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
+                buttonsHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
                 variants.forEach(v => {
                     buttonsHtml += `<button class="cat-btn" style="padding:10px; font-size:14px;" onclick="updatePrice('${v.price}', '${v.label}', '${p.name}')">${v.label}</button>`;
                 });
