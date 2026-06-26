@@ -141,10 +141,39 @@
 
         function openProduct(p) {
             const content = document.getElementById('modal-content');
-            content.innerHTML = `<h2>${p.name}</h2><p><b>Ціна: ${p.price}</b></p><button class="btn-main" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>`;
-            document.getElementById('modal').style.display = 'block';
+    
+                // Массив вариантов для перебора
+                const variants = [
+                    { label: '64 ГБ', price: p.price64 },
+                    { label: '128 ГБ', price: p.price128 },
+                    { label: '256 ГБ', price: p.price256 },
+                    { label: '512 ГБ', price: p.price512 }
+                ].filter(v => v.price); // Оставляем только те, где есть цена
+
+        let buttonsHtml = '';
+            if (variants.length > 0) {
+                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
+                variants.forEach(v => {
+                buttonsHtml += `<button class="cat-btn" style="padding: 10px; text-align:center;" onclick="updatePrice('${v.price}', '${v.label}')">${v.label}</button>`;
+            });
+            buttonsHtml += `</div>`;
         }
 
+            content.innerHTML = `
+            <h2>${p.name}</h2>
+            <p id="current-price" style="font-size: 20px; text-align:center;">Ціна: <b>${variants[0]?.price || p.price}</b></p>
+            ${buttonsHtml}
+            <button class="btn-main" id="order-btn" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>
+        `;
+        document.getElementById('modal').style.display = 'block';
+    }
+
+    function updatePrice(price, memory) {
+        document.getElementById('current-price').innerHTML = `Ціна: <b>${price}</b>`;
+        const name = document.querySelector('h2').innerText;
+        document.getElementById('order-btn').onclick = () => 
+            Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
+    }
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
         Telegram.WebApp.ready();
     </script>
