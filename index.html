@@ -90,6 +90,47 @@
         const API_URL = 'https://api.sheety.co/a9dd7b52784ce73cfff44eb4e535efce/shop/лист1';
         let allProducts = [];
 
+        let currentProducts = []; // Добавьте это в начало скрипта
+        let isSorted = false;
+
+        function showCategory(cat, isFromMain) {
+            window.fromMain = isFromMain;
+            document.getElementById('category-view').style.display = 'none';
+            document.getElementById('brand-view').style.display = 'none';
+            document.getElementById('product-view').style.display = 'flex';
+            document.getElementById('cat-title').innerText = cat;
+            
+            // Фильтруем товары для текущей категории
+            currentProducts = allProducts.filter(p => p.category && p.category.trim() === cat);
+            isSorted = false; // Сбрасываем сортировку
+            renderCatalog();
+        }
+
+        function renderCatalog() {
+            const container = document.getElementById('catalog');
+            container.innerHTML = '';
+            currentProducts.forEach(p => {
+                const div = document.createElement('div');
+                div.className = 'product';
+                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: <b>${p.price}</b></p>`;
+                div.onclick = () => openProduct(p);
+                container.appendChild(div);
+            });
+        }
+
+        function sortProducts() {
+            isSorted = !isSorted;
+            if (isSorted) {
+                // Сортируем: превращаем цену в число (заменяем все нечисловые символы, если нужно)
+                currentProducts.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+                document.getElementById('sort-btn').innerText = '💰 Сортувати: Дорогі спочатку';
+            } else {
+                // Возвращаем исходный порядок (можно просто перезагрузить)
+                showCategory(document.getElementById('cat-title').innerText, window.fromMain);
+                return;
+            }
+            renderCatalog();
+        }
         fetch(API_URL).then(res => res.json()).then(data => { allProducts = Array.isArray(data) ? data : data.лист1; });
 
         function showBrands() {
