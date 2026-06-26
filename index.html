@@ -23,6 +23,7 @@
             <button class="cat-btn" onclick="showBrands()">📱 Телефони</button>
             <button class="cat-btn" onclick="showCategory('Планшети')">タブ Планшети</button>
             <button class="cat-btn" onclick="showCategory('Аксесуари')">🎧 Аксесуари</button>
+            <button class="cat-btn" onclick="showInfo()" style="background:#eef;">📍 Контакти та адреса</button>
         </div>
     </div>
 
@@ -79,6 +80,18 @@
                     container.appendChild(div);
                 }
             });
+        }
+        function showInfo() {
+            document.getElementById('category-view').style.display = 'none';
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <h2>📍 Контакти</h2>
+                <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8</b></p>
+                <p>Графік роботи:<br>Пн-Пт 08:00 - 18:00, Сб-Нд 08:00 - 17:00</p>
+                <p>Телефон підтримки:<br><a href="tel:+380973916400">+380631891683</a></p>
+                <button class="btn-main" onclick="closeModal()">Зрозуміло</button>
+            `;
+            document.getElementById('modal').style.display = 'block';
         }
         
         function openModal(index) {
