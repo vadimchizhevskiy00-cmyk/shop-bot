@@ -106,7 +106,6 @@
         function openProduct(p) {
             const content = document.getElementById('modal-content');
             
-            // Собираем варианты из полей таблицы
             const variants = [
                 { label: '64 ГБ', price: p.price64 },
                 { label: '128 ГБ', price: p.price128 },
@@ -115,13 +114,12 @@
             ].filter(v => v.price && v.price !== "");
 
             let buttonsHtml = '';
-            // Начальная цена — это цена первого доступного варианта или базовая цена
-            let initialPrice = variants.length > 0 ? variants[0].price : (p.price || "Ціна не вказана");
+            // Изначально цена не отображается (или пишем подсказку)
+            let displayPrice = "Оберіть об'єм пам'яті";
 
             if (variants.length > 0) {
                 buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap:10px; margin-bottom:15px;">`;
                 variants.forEach(v => {
-                    // Передаем параметры в updatePrice
                     buttonsHtml += `<button class="cat-btn" style="padding:10px; text-align:center; justify-content:center;" onclick="updatePrice('${v.price}', '${v.label}', '${p.name}')">${v.label}</button>`;
                 });
                 buttonsHtml += `</div>`;
@@ -129,22 +127,26 @@
 
             content.innerHTML = `
                 <h2>${p.name}</h2>
-                <p style="font-size: 18px; text-align:center;">Ціна: <b id="current-price">${initialPrice}</b></p>
+                <p style="font-size: 18px; text-align:center;">Ціна: <b id="current-price" style="color: #2481cc;">${displayPrice}</b></p>
                 ${buttonsHtml}
-                <button class="btn-main" id="order-btn" onclick="Telegram.WebApp.sendData('${p.name} - ${initialPrice}')">Замовити</button>
+                <button class="btn-main" id="order-btn" style="display:none;" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>
             `;
             document.getElementById('modal').style.display = 'block';
         }
 
         function updatePrice(price, memory, name) {
-            // 1. Меняем текст цены в HTML
-            document.getElementById('current-price').innerText = price;
+            // 1. Показываем выбранную цену
+            const priceEl = document.getElementById('current-price');
+            priceEl.innerText = price;
+            priceEl.style.color = "#333"; // Делаем цвет текста обычным, когда цена выбрана
             
-            // 2. Обновляем действие кнопки "Замовити" с учетом выбранной памяти
+            // 2. Показываем кнопку "Замовити", если она была скрыта
             const orderBtn = document.getElementById('order-btn');
-            orderBtn.onclick = () => Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
+            orderBtn.style.display = 'block';
+            orderBtn.innerText = `Замовити за ${price}`;
             
-            // (Опционально) Визуально подсветить активную кнопку можно через добавление класса
+            // 3. Обновляем действие кнопки "Замовити"
+            orderBtn.onclick = () => Telegram.WebApp.sendData(`${name} (${memory}) - ${price}`);
         }
 
         function showInfo() {
