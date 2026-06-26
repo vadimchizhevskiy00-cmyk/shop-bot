@@ -89,6 +89,8 @@
 
         function openProduct(p) {
             const content = document.getElementById('modal-content');
+            
+            // Варианты памяти
             const variants = [
                 { label: '64 ГБ', price: p.price64 },
                 { label: '128 ГБ', price: p.price128 },
@@ -98,17 +100,24 @@
 
             let buttonsHtml = '';
             if (variants.length > 0) {
-                buttonsHtml = `<div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
+                buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
                 variants.forEach(v => {
                     buttonsHtml += `<button class="cat-btn" style="padding:10px; font-size:14px;" onclick="updatePrice('${v.price}', '${v.label}', '${p.name}')">${v.label}</button>`;
                 });
                 buttonsHtml += `</div>`;
             }
 
+            // Добавляем вывод описания и характеристик
+            const description = p.description ? `<div style="margin-top:15px;"><p><b>Опис:</b><br>${p.description}</p></div>` : '';
+            const specs = p.specs ? `<div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-top:10px;"><p><b>Характеристики:</b><br>${p.specs}</p></div>` : '';
+
             content.innerHTML = `<h2>${p.name}</h2>
                 <p style="font-size:20px; text-align:center;">Ціна: <b id="current-price" style="color: #2481cc;">Оберіть об'єм пам'яті</b></p>
                 ${buttonsHtml}
+                ${description}
+                ${specs}
                 <button class="btn-main" id="order-btn" style="display:none;" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>`;
+            
             document.getElementById('modal').style.display = 'block';
         }
 
