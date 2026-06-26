@@ -23,8 +23,8 @@
         <h1>Каталог</h1>
         <div class="category-grid">
             <button class="cat-btn" onclick="showBrands()">📱 Телефони</button>
-            <button class="cat-btn" onclick="showCategory('Планшети')">タブ Планшети</button>
-            <button class="cat-btn" onclick="showCategory('Аксесуари')">🎧 Аксесуари</button>
+            <button class="cat-btn" onclick="showCategory('Планшети', true)">タブ Планшети</button>
+            <button class="cat-btn" onclick="showCategory('Аксесуари', true)">🎧 Аксесуари</button>
             <button class="cat-btn" onclick="showInfo()" style="background:#eef;">📍 Контакти та адреса</button>
         </div>
     </div>
@@ -33,15 +33,15 @@
         <button class="back-nav" onclick="showMain()">← Назад</button>
         <h2>Оберіть бренд</h2>
         <div class="category-grid">
-            <button class="cat-btn" onclick="showCategory('Samsung')">Samsung</button>
-            <button class="cat-btn" onclick="showCategory('Redmi')">Redmi</button>
-            <button class="cat-btn" onclick="showCategory('Xiaomi')">Xiaomi</button>
-            <button class="cat-btn" onclick="showCategory('Apple')">Apple</button>
+            <button class="cat-btn" onclick="showCategory('Samsung', false)">Samsung</button>
+            <button class="cat-btn" onclick="showCategory('Redmi', false)">Redmi</button>
+            <button class="cat-btn" onclick="showCategory('Xiaomi', false)">Xiaomi</button>
+            <button class="cat-btn" onclick="showCategory('Apple', false)">Apple</button>
         </div>
     </div>
 
     <div id="product-view" style="display:none;">
-        <button class="back-nav" onclick="backToBrands()">← Назад</button>
+        <button class="back-nav" onclick="backToPrevious()">← Назад</button>
         <h2 id="cat-title"></h2>
         <div id="catalog"></div>
     </div>
@@ -63,25 +63,13 @@
             document.getElementById('brand-view').style.display = 'block';
         }
 
-        function showInfo() {
-            const content = document.getElementById('modal-content');
-            content.innerHTML = `
-                <h2>📍 Контакти</h2>
-                <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8 (Автостанція)</b></p>
-                <p>Графік роботи:<br>
-                    Пн-Пт 08:00 - 18:00<br>
-                    Сб-Нд 08:00 - 17:00
-                </p>
-                <p>Телефони підтримки:<br>
-                    <a href="tel:+380xxxxxxxxx">+380973916400</a><br>
-                    <a href="tel:+380xxxxxxxxx">+380631891683</a>
-                </p>
-                <button class="btn-main" onclick="closeModal()">Зрозуміло</button>
-            `;
-            document.getElementById('modal').style.display = 'block';
+        function showMain() {
+            document.getElementById('brand-view').style.display = 'none';
+            document.getElementById('category-view').style.display = 'block';
         }
 
-        function showCategory(cat) {
+        function showCategory(cat, isFromMain) {
+            window.fromMain = isFromMain;
             document.getElementById('category-view').style.display = 'none';
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'block';
@@ -97,6 +85,31 @@
                 div.onclick = () => openProduct(p);
                 container.appendChild(div);
             });
+        }
+
+        function backToPrevious() {
+            document.getElementById('product-view').style.display = 'none';
+            if (window.fromMain) {
+                document.getElementById('category-view').style.display = 'block';
+            } else {
+                document.getElementById('brand-view').style.display = 'block';
+            }
+        }
+
+        function showInfo() {
+            const content = document.getElementById('modal-content');
+            content.innerHTML = `
+                <h2 style="margin-bottom: 20px;">📍 Контакти</h2>
+                <div style="line-height: 1.6; text-align: center;">
+                    <p>Ми знаходимось за адресою:<br><b>м. Чугуїв, Центральний бульвар, 8</b></p>
+                    <p>Графік роботи:<br>Пн-Пт: 08:00 - 18:00<br>Сб-Нд: 08:00 - 17:00</p>
+                    <p>Телефони підтримки:<br>
+                    <a href="tel:+380XXXXXXXXX" style="color: #2481cc; font-weight: bold; text-decoration: none;">+380 (97) 391-64-00</a><br>
+                    <a href="tel:+380YYYYYYYYY" style="color: #2481cc; font-weight: bold; text-decoration: none;">+380 (63) 189-16-83</a></p>
+                </div>
+                <button class="btn-main" onclick="closeModal()">Зрозуміло</button>
+            `;
+            document.getElementById('modal').style.display = 'block';
         }
 
         function openProduct(p) {
@@ -118,9 +131,6 @@
         }
 
         function closeModal() { document.getElementById('modal').style.display = 'none'; }
-        function showMain() { document.getElementById('brand-view').style.display = 'none'; document.getElementById('category-view').style.display = 'block'; }
-        function backToBrands() { document.getElementById('product-view').style.display = 'none'; document.getElementById('brand-view').style.display = 'block'; }
-        
         Telegram.WebApp.ready();
     </script>
 </body>
