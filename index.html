@@ -90,15 +90,24 @@
         function openProduct(p) {
             const content = document.getElementById('modal-content');
             
-            // Варианты памяти
-            const variants = [
-                { label: '64 ГБ', price: p.price64 },
-                { label: '128 ГБ', price: p.price128 },
-                { label: '256 ГБ', price: p.price256 },
-                { label: '512 ГБ', price: p.price512 }
-            ].filter(v => v.price && v.price !== "");
+            // Определяем, является ли товар аксессуаром (простая проверка)
+            const isAccessory = p.category && p.category.trim() === 'Аксесуари';
+
+            // Собираем варианты памяти только если это НЕ аксессуар
+            let variants = [];
+            if (!isAccessory) {
+                variants = [
+                    { label: '64 ГБ', price: p.price64 },
+                    { label: '128 ГБ', price: p.price128 },
+                    { label: '256 ГБ', price: p.price256 },
+                    { label: '512 ГБ', price: p.price512 }
+                ].filter(v => v.price && v.price !== "");
+            }
 
             let buttonsHtml = '';
+            // Если аксессуар, сразу берем цену из поля p.price
+            let displayPrice = isAccessory ? (p.price || "Ціна не вказана") : "Оберіть об'єм пам'яті";
+            
             if (variants.length > 0) {
                 buttonsHtml = `<p>Оберіть об'єм пам'яті:</p><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:15px;">`;
                 variants.forEach(v => {
@@ -107,23 +116,20 @@
                 buttonsHtml += `</div>`;
             }
 
-            // Добавляем вывод описания и характеристик
-            // Описание: выделяем курсивом
-            const description = p.description ? 
-                `<div style="margin-top:15px; font-style: italic;"><p><b>Опис:</b><br>${p.description}</p></div>` : '';
+            // Блок описания и характеристик
+            const description = p.description ? `<div style="margin-top:15px; font-style:italic;"><p><b>Опис:</b><br>${p.description}</p></div>` : '';
+            const specs = p.specs ? `<div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-top:10px;"><p><b>Характеристики:</b><br>${p.specs.replace(/;/g, '<br>')}</p></div>` : '';
 
-            // Характеристики: заменяем ";" на перенос строки "<br>"
-            const specs = p.specs ? 
-                `<div style="background:#f9f9f9; padding:10px; border-radius:10px; margin-top:10px;">
-                    <p><b>Характеристики:</b><br>${p.specs.replace(/;/g, '<br>')}</p>
-                </div>` : '';
+            // Если аксессуар - кнопка "Замовити" видна сразу
+            const btnDisplay = isAccessory ? 'block' : 'none';
+            const btnText = isAccessory ? `Замовити за ${p.price}` : 'Замовити';
 
             content.innerHTML = `<h2>${p.name}</h2>
-                <p style="font-size:20px; text-align:center;">Ціна: <b id="current-price" style="color: #2481cc;">Оберіть об'єм пам'яті</b></p>
+                <p style="font-size:20px; text-align:center;">Ціна: <b id="current-price" style="color: ${isAccessory ? '#333' : '#2481cc'};">${displayPrice}</b></p>
                 ${buttonsHtml}
                 ${description}
                 ${specs}
-                <button class="btn-main" id="order-btn" style="display:none;" onclick="Telegram.WebApp.sendData('${p.name}')">Замовити</button>`;
+                <button class="btn-main" id="order-btn" style="display:${btnDisplay};" onclick="Telegram.WebApp.sendData('${p.name} - ${displayPrice}')">${btnText}</button>`;
             
             document.getElementById('modal').style.display = 'block';
         }
