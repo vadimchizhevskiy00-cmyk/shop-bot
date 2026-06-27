@@ -68,14 +68,40 @@
             document.getElementById('brand-view').style.display = 'none';
             document.getElementById('product-view').style.display = 'flex';
             document.getElementById('cat-title').innerText = cat;
-            
+
             const container = document.getElementById('catalog');
             container.innerHTML = '';
-            
-            allProducts.filter(p => p.category && p.category.trim() === cat).forEach(p => {
+
+            // Если это Аксессуары, сначала ищем уникальные подкатегории
+            if (cat === 'Аксесуари') {
+                const subcats = [...new Set(allProducts.filter(p => p.category === 'Аксесуари').map(p => p.subcategory))];
+                subcats.forEach(sub => {
+                    const btn = document.createElement('button');
+                    btn.className = 'cat-btn';
+                    btn.innerText = sub;
+                    btn.onclick = () => renderProductsBySubcat(sub);
+                    container.appendChild(btn);
+                });
+            } else {
+                // Для телефонов и планшетов просто выводим список
+                renderProducts(allProducts.filter(p => p.category && p.category.trim() === cat));
+            }
+        }
+
+        // Функция вывода товаров после выбора подкатегории
+        function renderProductsBySubcat(sub) {
+            const container = document.getElementById('catalog');
+            container.innerHTML = `<button class="back-nav" onclick="showCategory('Аксесуари', true)">← Назад</button>`;
+            renderProducts(allProducts.filter(p => p.subcategory === sub));
+        }
+
+        // Универсальная функция отрисовки списка товаров
+        function renderProducts(list) {
+            const container = document.getElementById('catalog');
+            list.forEach(p => {
                 const div = document.createElement('div');
                 div.className = 'product';
-                div.innerHTML = `<h3>${p.name}</h3>`;
+                div.innerHTML = `<h3>${p.name}</h3><p>Ціна: ${p.price || '...'}</p>`;
                 div.onclick = () => openProduct(p);
                 container.appendChild(div);
             });
